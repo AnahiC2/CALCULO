@@ -2,16 +2,18 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Resolver Desigualdades</title>
+  <title>Desigualdades con Gráfica</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    body { font-family: Arial; padding: 20px; max-width: 700px; margin: auto; }
     input, select, button { margin-top: 10px; display: block; width: 100%; padding: 8px; }
     .resultado { margin-top: 20px; padding: 10px; background-color: #f0f0f0; }
+    canvas { margin-top: 30px; }
   </style>
 </head>
 <body>
 
-  <h2>Resolver Desigualdades Lineales y Cuadráticas</h2>
+  <h2>Resolver y Graficar Desigualdades</h2>
 
   <label>Tipo de desigualdad:</label>
   <select id="tipo">
@@ -36,11 +38,14 @@
     <option value=">=">&ge;</option>
   </select>
 
-  <button onclick="resolver()">Resolver</button>
+  <button onclick="resolver()">Resolver y Graficar</button>
 
   <div id="salida" class="resultado"></div>
+  <canvas id="grafico" width="600" height="300"></canvas>
 
   <script>
+    let chart;
+
     function resolver() {
       const tipo = document.getElementById("tipo").value;
       const a = parseFloat(document.getElementById("a").value);
@@ -54,53 +59,75 @@
         return;
       }
 
-      if (tipo === "lineal") {
-        // ax + b op 0 -> x op -b/a
-        if (a === 0) {
-          salida.innerHTML = b === 0 ? "La desigualdad se cumple para todo x." : "No hay solución.";
-        } else {
-          const xVal = -b / a;
-          let texto = "";
-          if ((desigualdad === "<" && a > 0) || (desigualdad === ">" && a < 0)) {
-            texto = `x ${desigualdad} ${xVal}`;
-          } else {
-            texto = `x ${desigualdad === "<" ? ">" : "<"} ${xVal}`;
-          }
-          salida.innerHTML = "Solución: " + texto;
+      // Generar datos para la gráfica
+      const xVals = [], yVals = [], zonas = [];
+      for (let x = -20; x <= 20; x += 0.1) {
+        let y = tipo === "lineal" ? a * x + b : a * x * x + b * x + c;
+        xVals.push(x);
+        yVals.push(y);
+
+        // Verifica si se cumple la desigualdad
+        let cumple = false;
+        switch (desigualdad) {
+          case "<": cumple = y < 0; break;
+          case "<=": cumple = y <= 0; break;
+          case ">": cumple = y > 0; break;
+          case ">=": cumple = y >= 0; break;
         }
-      } else {
-        // cuadrática
-        const discriminante = b * b - 4 * a * c;
-        if (a === 0) {
-          salida.innerHTML = "No es una ecuación cuadrática (a = 0). Usa el modo lineal.";
-          return;
-        }
+        zonas.push(cumple ? y : null);
+      }
 
-        if (discriminante < 0) {
-          if ((desigualdad === "<" && a > 0) || (desigualdad === ">" && a < 0)) {
-            salida.innerHTML = "La desigualdad se cumple para todos los x.";
-          } else {
-            salida.innerHTML = "No hay solución real.";
-          }
+      // Mostrar solución textual
+      if (tipo === "lineal" && a !== 0) {
+        const xSol = -b / a;
+        const op = (a > 0) ? desigualdad : (desigualdad === "<" ? ">" :
+                         desigualdad === ">" ? "<" :
+                         desigualdad === "<=" ? ">=" : "<=");
+        salida.innerHTML = `Solución aproximada: x ${op} ${xSol.toFixed(2)}`;
+      } else if (tipo === "cuadratica") {
+        const d = b*b - 4*a*c;
+        if (d < 0) {
+          salida.innerHTML = "La ecuación no tiene soluciones reales, la gráfica no cruza el eje x.";
         } else {
-          const x1 = (-b - Math.sqrt(discriminante)) / (2 * a);
-          const x2 = (-b + Math.sqrt(discriminante)) / (2 * a);
-          const [min, max] = [Math.min(x1, x2), Math.max(x1, x2)];
-
-          let texto = "";
-          if (a > 0) {
-            if (desigualdad === "<") texto = `x ∈ (${min}, ${max})`;
-            else if (desigualdad === "<=") texto = `x ∈ [${min}, ${max}]`;
-            else texto = `x ∈ (-∞, ${min}) ∪ (${max}, ∞)`;
-          } else {
-            if (desigualdad === "<") texto = `x ∈ (-∞, ${min}) ∪ (${max}, ∞)`;
-            else if (desigualdad === "<=") texto = `x ∈ (-∞, ${min}] ∪ [${max}, ∞)`;
-            else texto = `x ∈ (${min}, ${max})`;
-          }
-
-          salida.innerHTML = "Solución: " + texto;
+          const x1 = (-b - Math.sqrt(d)) / (2 * a);
+          const x2 = (-b + Math.sqrt(d)) / (2 * a);
+          salida.innerHTML = `Raíces: x₁ ≈ ${x1.toFixed(2)}, x₂ ≈ ${x2.toFixed(2)}. Observa la gráfica para ver el intervalo de solución.`;
         }
       }
+
+      // Crear gráfica
+      if (chart) chart.destroy();
+      const ctx = document.getElementById('grafico').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: xVals,
+          datasets: [
+            {
+              label: 'Función',
+              data: yVals,
+              borderColor: 'blue',
+              borderWidth: 2,
+              fill: false
+            },
+            {
+              label: 'Zona válida (solución)',
+              data: zonas,
+              borderColor: 'green',
+              borderDash: [5, 5],
+              borderWidth: 2,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'x' } },
+            y: { title: { display: true, text: 'f(x)' }, min: -20, max: 20 }
+          }
+        }
+      });
     }
   </script>
 
