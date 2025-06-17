@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resolver Desigualdades</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    input, select, button { margin-top: 10px; display: block; width: 100%; padding: 8px; }
+    .resultado { margin-top: 20px; padding: 10px; background-color: #f0f0f0; }
+  </style>
+</head>
+<body>
+
+  <h2>Resolver Desigualdades Lineales y Cuadráticas</h2>
+
+  <label>Tipo de desigualdad:</label>
+  <select id="tipo">
+    <option value="lineal">Lineal (ax + b &lt; 0)</option>
+    <option value="cuadratica">Cuadrática (ax² + bx + c &lt; 0)</option>
+  </select>
+
+  <label>Coeficiente a:</label>
+  <input type="number" id="a" step="any">
+
+  <label>Coeficiente b:</label>
+  <input type="number" id="b" step="any">
+
+  <label>Coeficiente c (solo para cuadráticas):</label>
+  <input type="number" id="c" step="any" value="0">
+
+  <label>Tipo de desigualdad:</label>
+  <select id="desigualdad">
+    <option value="<">&lt;</option>
+    <option value="<=">&le;</option>
+    <option value=">">&gt;</option>
+    <option value=">=">&ge;</option>
+  </select>
+
+  <button onclick="resolver()">Resolver</button>
+
+  <div id="salida" class="resultado"></div>
+
+  <script>
+    function resolver() {
+      const tipo = document.getElementById("tipo").value;
+      const a = parseFloat(document.getElementById("a").value);
+      const b = parseFloat(document.getElementById("b").value);
+      const c = parseFloat(document.getElementById("c").value);
+      const desigualdad = document.getElementById("desigualdad").value;
+      const salida = document.getElementById("salida");
+
+      if (isNaN(a) || isNaN(b) || (tipo === "cuadratica" && isNaN(c))) {
+        salida.innerHTML = "Por favor, ingresa todos los coeficientes correctamente.";
+        return;
+      }
+
+      if (tipo === "lineal") {
+        // ax + b op 0 -> x op -b/a
+        if (a === 0) {
+          salida.innerHTML = b === 0 ? "La desigualdad se cumple para todo x." : "No hay solución.";
+        } else {
+          const xVal = -b / a;
+          let texto = "";
+          if ((desigualdad === "<" && a > 0) || (desigualdad === ">" && a < 0)) {
+            texto = `x ${desigualdad} ${xVal}`;
+          } else {
+            texto = `x ${desigualdad === "<" ? ">" : "<"} ${xVal}`;
+          }
+          salida.innerHTML = "Solución: " + texto;
+        }
+      } else {
+        // cuadrática
+        const discriminante = b * b - 4 * a * c;
+        if (a === 0) {
+          salida.innerHTML = "No es una ecuación cuadrática (a = 0). Usa el modo lineal.";
+          return;
+        }
+
+        if (discriminante < 0) {
+          if ((desigualdad === "<" && a > 0) || (desigualdad === ">" && a < 0)) {
+            salida.innerHTML = "La desigualdad se cumple para todos los x.";
+          } else {
+            salida.innerHTML = "No hay solución real.";
+          }
+        } else {
+          const x1 = (-b - Math.sqrt(discriminante)) / (2 * a);
+          const x2 = (-b + Math.sqrt(discriminante)) / (2 * a);
+          const [min, max] = [Math.min(x1, x2), Math.max(x1, x2)];
+
+          let texto = "";
+          if (a > 0) {
+            if (desigualdad === "<") texto = `x ∈ (${min}, ${max})`;
+            else if (desigualdad === "<=") texto = `x ∈ [${min}, ${max}]`;
+            else texto = `x ∈ (-∞, ${min}) ∪ (${max}, ∞)`;
+          } else {
+            if (desigualdad === "<") texto = `x ∈ (-∞, ${min}) ∪ (${max}, ∞)`;
+            else if (desigualdad === "<=") texto = `x ∈ (-∞, ${min}] ∪ [${max}, ∞)`;
+            else texto = `x ∈ (${min}, ${max})`;
+          }
+
+          salida.innerHTML = "Solución: " + texto;
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
