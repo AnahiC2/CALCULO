@@ -1,48 +1,31 @@
-# dominio_rango.py
+# dominio_rango_funcion.py
 # Autor: [Tu nombre]
-# Descripción: Calcula el dominio y rango de funciones matemáticas simples usando SymPy
+# Descripción: Calcula el dominio y rango de una función matemática usando SymPy
 
-from sympy import symbols, solve, S, Interval, Union, oo
+from sympy import symbols, S, sin, cos
 from sympy.calculus.util import continuous_domain, function_range
-from sympy.functions import sin, cos
-from sympy.abc import x
 
-def calcular_dominio(funcion):
-    """
-    Calcula el dominio de una función simbólica usando SymPy.
-    """
-    dominio = continuous_domain(funcion, x, S.Reals)
-    return dominio
+# Definir la variable
+x = symbols('x')
 
-def calcular_rango(funcion):
-    """
-    Calcula una aproximación del rango de una función simbólica.
-    """
-    try:
-        rango = function_range(funcion, x, S.Reals)
-        return rango
-    except Exception as e:
-        return f"No se pudo calcular el rango: {e}"
+# 👉 Define aquí la función que quieres analizar
+# Ejemplo 1: Polinómica
+funcion = x**2 + 3*x + 2
 
-def mostrar_resultados(funcion):
-    """
-    Imprime la función, su dominio y su rango.
-    """
-    print(f"Función: {funcion}")
-    dominio = calcular_dominio(funcion)
-    print(f"Dominio: {dominio}")
-    rango = calcular_rango(funcion)
-    print(f"Rango: {rango}")
+# Ejemplo 2: Racional (descomenta si deseas probar)
+# funcion = 1 / (x - 1)
 
-# Ejemplos de funciones
-if __name__ == "__main__":
-    funciones = [
-        x**2 - 3*x + 2,         # Polinómica
-        1 / (x - 2),            # Racional
-        sin(x),                # Trigonométrica
-        1 / (x**2 + 1)         # Función racional continua
-    ]
+# Ejemplo 3: Trigonométrica (descomenta si deseas probar)
+# funcion = sin(x)
 
-    for f in funciones:
-        print("-" * 40)
-        mostrar_resultados(f)
+# Calcular el dominio (valores de x donde la función es continua)
+dominio = continuous_domain(funcion, x, S.Reals)
+
+# Calcular el rango (valores que toma la función)
+rango = function_range(funcion, x, S.Reals)
+
+# Mostrar resultados
+print("🔍 Análisis de la función:")
+print(f"Función: {funcion}")
+print(f"📌 Dominio: {dominio}")
+print(f"📌 Rango: {rango}")
