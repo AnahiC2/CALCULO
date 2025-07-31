@@ -1,25 +1,80 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calculadora de Derivadas</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.13/nerdamer.core.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.13/Calculus.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <div class="container">
-    <h1>Calculadora de Derivadas</h1>
-    <input type="text" id="funcion" placeholder="Ej: x^3 + 2*x^2 - x" />
-    <button onclick="resolverDerivada()">Calcular derivada</button>
+function resolverDerivada() {
+  const entrada = document.getElementById("funcion").value;
+  const resultado = document.getElementById("resultado");
 
-    <div id="resultado"></div>
-    <canvas id="grafica" width="600" height="400"></canvas>
-  </div>
+  try {
+    // Derivar con nerdamer
+    const derivadaSymbolic = nerdamer(`diff(${entrada}, x)`).toString();
 
-  <script src="script.js"></script>
-</body>
-</html>
+    resultado.innerHTML = `
+      <h2>Resultados:</h2>
+      <p><strong>Función original:</strong> f(x) = ${entrada}</p>
+      <p><strong>Derivada:</strong> f'(x) = ${derivadaSymbolic}</p>
+    `;
+
+    // Graficar
+    graficar(entrada, derivadaSymbolic);
+  } catch (e) {
+    resultado.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+  }
+}
+
+function graficar(funcionStr, derivadaStr) {
+  const xValues = [];
+  const yOriginal = [];
+  const yDerivada = [];
+
+  const f = math.compile(funcionStr);
+  const fDeriv = math.compile(nerdamer(derivadaStr).toString());
+
+  for (let x = -10; x <= 10; x += 0.2) {
+    xValues.push(x);
+
+    try {
+      yOriginal.push(f.evaluate({ x }));
+    } catch {
+      yOriginal.push(null);
+    }
+
+    try {
+      yDerivada.push(fDeriv.evaluate({ x }));
+    } catch {
+      yDerivada.push(null);
+    }
+  }
+
+  const ctx = document.getElementById("grafica").getContext("2d");
+  if (window.miGrafica) window.miGrafica.destroy(); // eliminar gráfica previa
+
+  window.miGrafica = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: xValues,
+      datasets: [
+        {
+          label: "f(x)",
+          data: yOriginal,
+          borderColor: "blue",
+          fill: false,
+        },
+        {
+          label: "f '(x)",
+          data: yDerivada,
+          borderColor: "red",
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: false,
+      scales: {
+        x: {
+          title: { display: true, text: "x" },
+        },
+        y: {
+          title: { display: true, text: "y" },
+        },
+      },
+    },
+  });
+}
