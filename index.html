@@ -3,51 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dominio y Rango de una Función</title>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <title>Calculadora de Derivadas</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.13/nerdamer.core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.13/Calculus.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body style="font-family:sans-serif;text-align:center;padding:20px;">
+<body>
+  <div class="container">
+    <h1>Calculadora de Derivadas</h1>
+    <input type="text" id="funcion" placeholder="Ej: x^3 + 2*x^2 - x" />
+    <button onclick="resolverDerivada()">Calcular derivada</button>
 
-  <h1>Calculadora de Dominio y Rango</h1>
-  <p>Introduce una función en términos de x (ej. <code>Math.sin(x)</code>, <code>Math.log(x)</code>, <code>1/x</code>)</p>
+    <div id="resultado"></div>
+    <canvas id="grafica" width="600" height="400"></canvas>
+  </div>
 
-  <input type="text" id="funcion" value="Math.sin(x)" size="40">
-  <button onclick="graficar()">Graficar</button>
-
-  <div id="grafica" style="width:100%;max-width:700px;height:500px;margin:auto;"></div>
-
-  <p id="resultado"></p>
-
-  <script>
-    function graficar() {
-      const expr = document.getElementById("funcion").value;
-      const x = [];
-      const y = [];
-      for (let i = -100; i <= 100; i += 0.1) {
-        try {
-          const xi = i;
-          const yi = eval(expr);
-          if (isFinite(yi)) {
-            x.push(xi);
-            y.push(yi);
-          }
-        } catch (e) {
-          continue;
-        }
-      }
-
-      const data = [{ x, y, type: 'scatter', mode: 'lines', line: {color: 'blue'} }];
-      Plotly.newPlot('grafica', data, { title: 'Gráfica de la función' });
-
-      const minY = Math.min(...y);
-      const maxY = Math.max(...y);
-      document.getElementById("resultado").innerHTML = `
-        <strong>Dominio:</strong> Aproximadamente de ${x[0].toFixed(2)} a ${x[x.length - 1].toFixed(2)}<br>
-        <strong>Rango:</strong> Aproximadamente de ${minY.toFixed(2)} a ${maxY.toFixed(2)}
-      `;
-    }
-
-    graficar(); // graficar al inicio
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
