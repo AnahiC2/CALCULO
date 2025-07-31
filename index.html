@@ -82,7 +82,7 @@
     <div class="container">
         <h2>Ingresa tu función</h2>
         <p>Ejemplos: 2x^2, 3x^3 + 2x - 5, sin(2x), e^(3x), ln(x^2), sqrt(4x)</p>
-        <input type="text" id="functionInput" placeholder="Ejemplo: 2x^2 + 3x - 5">
+        <input type="text" id="functionInput" placeholder="Ejemplo: 2x^2 + 3x - 5" value="2x^2">
         <button onclick="calculateDerivative()">Calcular Derivada</button>
         <p class="info">Usa ^ para exponentes, * para multiplicación, y paréntesis para agrupación.</p>
     </div>
@@ -135,28 +135,34 @@
         }
         
         function computeDerivative(expr, steps) {
-            // Simplificar la expresión primero
-            let simplified = math.simplify(expr).toString();
-            steps.push(`<div class="step"><strong>Simplificando la expresión:</strong><br>${expr} → ${simplified}</div>`);
-            
-            // Calcular la derivada usando math.js
-            let derivative = math.derivative(simplified, 'x').toString();
-            steps.push(`<div class="step"><strong>Derivando:</strong><br>d/dx(${simplified}) = ${derivative}</div>`);
-            
-            // Simplificar el resultado de la derivada
-            let simplifiedDerivative = math.simplify(derivative).toString();
-            if (simplifiedDerivative !== derivative) {
-                steps.push(`<div class="step"><strong>Simplificando el resultado:</strong><br>${derivative} → ${simplifiedDerivative}</div>`);
+            try {
+                // Simplificar la expresión primero
+                let simplified = math.simplify(expr).toString();
+                if (simplified !== expr) {
+                    steps.push(`<div class="step"><strong>Simplificando la expresión:</strong><br>${expr} → ${simplified}</div>`);
+                }
+                
+                // Calcular la derivada usando math.js
+                let derivative = math.derivative(simplified, 'x').toString();
+                steps.push(`<div class="step"><strong>Aplicando reglas de derivación:</strong><br>d/dx(${simplified}) = ${derivative}</div>`);
+                
+                // Simplificar el resultado de la derivada
+                let simplifiedDerivative = math.simplify(derivative).toString();
+                if (simplifiedDerivative !== derivative) {
+                    steps.push(`<div class="step"><strong>Simplificando el resultado:</strong><br>${derivative} → ${simplifiedDerivative}</div>`);
+                }
+                
+                return simplifiedDerivative;
+            } catch (e) {
+                throw new Error("No se pudo calcular la derivada. Asegúrate de usar sintaxis válida como 2x^2, sin(x), etc.");
             }
-            
-            return simplifiedDerivative;
         }
         
         function displayResult(originalFunc, derivative, steps) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
                 <p class="math">Función original: \\( f(x) = ${originalFunc} \\)</p>
-                <p class="math">Derivada simplificada: \\( f'(x) = ${derivative} \\)</p>
+                <p class="math">Derivada: \\( f'(x) = ${derivative} \\)</p>
             `;
             
             const stepsDiv = document.getElementById('steps');
@@ -276,6 +282,11 @@
                 functionChart = null;
             }
         }
+        
+        // Calcular automáticamente al cargar la página
+        window.onload = function() {
+            calculateDerivative();
+        };
     </script>
 </body>
 </html>
