@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Derivadas Paso a Paso</title>
+    <title>Calculadora de Derivadas Rápida</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h1>Calculadora de Derivadas</h1>
-        <p>Introduce tu función para ver la derivada paso a paso y su gráfica.</p>
+        <h1>Calculadora de Derivadas Rápida</h1>
+        <p>Introduce tu función para ver la derivada y su gráfica al instante.</p>
     </header>
 
     <main>
         <section class="input-section">
             <label for="functionInput">Introduce la función f(x):</label>
-            <input type="text" id="functionInput" placeholder="Ej: x^2 + 3x - 5">
-            <button id="calculateBtn">Calcular Derivada</button>
+            <input type="text" id="functionInput" placeholder="Ej: x^3 - 2*x + 7">
+            <button id="calculateBtn">Calcular y Graficar</button>
         </section>
 
         <section class="output-section">
-            <h2>Derivada Paso a Paso:</h2>
-            <div id="stepsOutput" class="steps-box">
-                <p>Ingresa una función y haz clic en "Calcular Derivada" para ver los pasos.</p>
+            <h2>Derivada Calculada:</h2>
+            <div id="derivativeOutput" class="output-box">
+                <p>Ingresa una función y haz clic en "Calcular y Graficar" para ver el resultado.</p>
             </div>
 
             <h2>Gráfica de la Función y su Derivada:</h2>
@@ -33,9 +33,10 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 Calculadora de Derivadas. Creado para GitHub Pages.</p>
+        <p>&copy; 2025 Calculadora de Derivadas Rápida.</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/mathjs/lib/browser/math.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
