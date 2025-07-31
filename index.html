@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Derivadas</title>
+    <title>Calculadora Avanzada de Derivadas</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.6.0/lib/browser/math.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,6 +55,9 @@
         }
         .step {
             margin-bottom: 10px;
+            padding: 8px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
         }
         .graph-container {
             margin-top: 30px;
@@ -67,24 +71,27 @@
             color: #7f8c8d;
             margin-top: 5px;
         }
+        .math {
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
-    <h1>Calculadora de Derivadas Paso a Paso</h1>
+    <h1>Calculadora Avanzada de Derivadas</h1>
     
     <div class="container">
         <h2>Ingresa tu función</h2>
-        <p>Ejemplos: x^2, sin(x), 3x^3 + 2x - 5, e^x, ln(x), sqrt(x)</p>
-        <input type="text" id="functionInput" placeholder="Ejemplo: x^2 + 3x - 5">
+        <p>Ejemplos: 2x^2, 3x^3 + 2x - 5, sin(2x), e^(3x), ln(x^2), sqrt(4x)</p>
+        <input type="text" id="functionInput" placeholder="Ejemplo: 2x^2 + 3x - 5">
         <button onclick="calculateDerivative()">Calcular Derivada</button>
-        <p class="info">Usa ^ para exponentes (x^2), * para multiplicación (3*x), y paréntesis para agrupación.</p>
+        <p class="info">Usa ^ para exponentes, * para multiplicación, y paréntesis para agrupación.</p>
     </div>
     
     <div class="container">
         <h2>Resultado</h2>
         <div id="result">La derivada aparecerá aquí...</div>
         
-        <h3>Pasos de la solución</h3>
+        <h3>Pasos detallados de la solución</h3>
         <div id="steps">Los pasos detallados aparecerán aquí...</div>
     </div>
     
@@ -95,6 +102,11 @@
 
     <script>
         let functionChart = null;
+        
+        // Configurar math.js para usar x como variable
+        math.import({
+            'x': math.complex(0, 0)
+        }, {override: true});
         
         function calculateDerivative() {
             const input = document.getElementById('functionInput').value.trim();
@@ -109,13 +121,12 @@
                 document.getElementById('steps').innerHTML = "";
                 
                 // Parsear la función y calcular la derivada
-                const parsedFunc = parseFunction(input);
-                const derivative = computeDerivative(parsedFunc);
+                const steps = [];
+                const derivative = computeDerivative(input, steps);
                 
                 // Mostrar resultados
-                displayResult(input, derivative);
-                displaySteps(parsedFunc, derivative);
-                plotFunctionAndDerivative(input, derivative.expression);
+                displayResult(input, derivative, steps);
+                plotFunctionAndDerivative(input, derivative);
                 
             } catch (error) {
                 showError("Error al calcular la derivada: " + error.message);
@@ -123,137 +134,34 @@
             }
         }
         
-        function parseFunction(input) {
-            // Simplificación: este es un parser muy básico
-            // En una aplicación real, usarías una librería como math.js o expr-eval
+        function computeDerivative(expr, steps) {
+            // Simplificar la expresión primero
+            let simplified = math.simplify(expr).toString();
+            steps.push(`<div class="step"><strong>Simplificando la expresión:</strong><br>${expr} → ${simplified}</div>`);
             
-            // Reemplazar notaciones alternativas
-            let expr = input.toLowerCase()
-                .replace(/sqrt\(([^)]+)\)/g, '($1)^(1/2)')
-                .replace(/\s+/g, '') // Eliminar espacios
-                .replace(/([0-9])([a-z])/g, '$1*$2') // 3x -> 3*x
-                .replace(/([a-z])([0-9])/g, '$1*$2') // x3 -> x*3
-                .replace(/([)])([a-z0-9(])/g, '$1*$2') // )( -> )*(
-                .replace(/([0-9)])([(])/g, '$1*$2'); // 3( -> 3*(
+            // Calcular la derivada usando math.js
+            let derivative = math.derivative(simplified, 'x').toString();
+            steps.push(`<div class="step"><strong>Derivando:</strong><br>d/dx(${simplified}) = ${derivative}</div>`);
             
-            // Validar caracteres permitidos
-            if (!/^[0-9x+\-*/^().sincotaelg]+$/.test(expr)) {
-                throw new Error("La función contiene caracteres no permitidos.");
+            // Simplificar el resultado de la derivada
+            let simplifiedDerivative = math.simplify(derivative).toString();
+            if (simplifiedDerivative !== derivative) {
+                steps.push(`<div class="step"><strong>Simplificando el resultado:</strong><br>${derivative} → ${simplifiedDerivative}</div>`);
             }
             
-            return {
-                raw: input,
-                expression: expr
-            };
+            return simplifiedDerivative;
         }
         
-        function computeDerivative(func) {
-            // Simplificación: este es un derivador simbólico muy básico
-            // En una aplicación real, usarías una librería como math.js o symbolic.js
-            
-            let expr = func.expression;
-            let steps = [];
-            let derivative = "";
-            
-            // Reglas básicas de derivación
-            if (expr === "x") {
-                derivative = "1";
-                steps.push("La derivada de x es 1.");
-            } 
-            else if (/^[0-9]+$/.test(expr)) {
-                derivative = "0";
-                steps.push("La derivada de una constante es 0.");
-            }
-            else if (expr.includes("^")) {
-                const parts = expr.split("^");
-                if (parts[0] === "x" || parts[0] === "(x)") {
-                    const exponent = parts[1].replace(/[()]/g, '');
-                    derivative = exponent + "*x^(" + exponent + "-1)";
-                    steps.push(`Aplicando la regla de la potencia: d/dx[x^${exponent}] = ${exponent}*x^(${exponent}-1)`);
-                } else {
-                    throw new Error("Solo se soportan potencias de x como x^n.");
-                }
-            }
-            else if (expr.includes("sin(x)")) {
-                derivative = "cos(x)";
-                steps.push("La derivada de sin(x) es cos(x).");
-            }
-            else if (expr.includes("cos(x)")) {
-                derivative = "-sin(x)";
-                steps.push("La derivada de cos(x) es -sin(x).");
-            }
-            else if (expr.includes("e^x")) {
-                derivative = "e^x";
-                steps.push("La derivada de e^x es e^x.");
-            }
-            else if (expr.includes("ln(x)")) {
-                derivative = "1/x";
-                steps.push("La derivada de ln(x) es 1/x.");
-            }
-            else if (expr.includes("+")) {
-                const terms = expr.split("+");
-                const derivatives = terms.map(term => computeDerivative({expression: term}));
-                derivative = derivatives.map(d => d.expression).join("+");
-                steps.push("Aplicando la regla de la suma: la derivada de una suma es la suma de las derivadas.");
-                derivatives.forEach((d, i) => {
-                    steps.push(`Derivada del término ${terms[i]}: ${d.expression}`);
-                });
-            }
-            else if (expr.includes("-")) {
-                const terms = expr.split("-");
-                const derivatives = terms.map(term => computeDerivative({expression: term}));
-                derivative = derivatives.map(d => d.expression).join("-");
-                steps.push("Aplicando la regla de la resta: la derivada de una resta es la resta de las derivadas.");
-                derivatives.forEach((d, i) => {
-                    steps.push(`Derivada del término ${terms[i]}: ${d.expression}`);
-                });
-            }
-            else if (expr.includes("*")) {
-                // Implementación básica de la regla del producto
-                const terms = expr.split("*");
-                if (terms.length !== 2) throw new Error("Solo se soportan productos de dos términos.");
-                
-                const f = terms[0], g = terms[1];
-                const df = computeDerivative({expression: f}).expression;
-                const dg = computeDerivative({expression: g}).expression;
-                
-                derivative = `(${df})*${g} + ${f}*(${dg})`;
-                steps.push(`Aplicando la regla del producto: d/dx[${f}*${g}] = (d/dx[${f}])*${g} + ${f}*(d/dx[${g}])`);
-                steps.push(`Derivada de ${f}: ${df}`);
-                steps.push(`Derivada de ${g}: ${dg}`);
-            }
-            else {
-                throw new Error("Formato de función no soportado. Intenta con algo como x^2, sin(x), etc.");
-            }
-            
-            return {
-                expression: derivative,
-                steps: steps
-            };
-        }
-        
-        function displayResult(originalFunc, derivative) {
+        function displayResult(originalFunc, derivative, steps) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
-                <p>Función original: \\( f(x) = ${originalFunc} \\)</p>
-                <p>Derivada: \\( f'(x) = ${derivative.expression} \\)</p>
+                <p class="math">Función original: \\( f(x) = ${originalFunc} \\)</p>
+                <p class="math">Derivada simplificada: \\( f'(x) = ${derivative} \\)</p>
             `;
-            MathJax.typeset();
-        }
-        
-        function displaySteps(parsedFunc, derivative) {
+            
             const stepsDiv = document.getElementById('steps');
-            let stepsHTML = "";
+            stepsDiv.innerHTML = steps.join('');
             
-            stepsHTML += `<div class="step"><strong>Función original:</strong> \\( f(x) = ${parsedFunc.raw} \\)</div>`;
-            
-            derivative.steps.forEach(step => {
-                stepsHTML += `<div class="step">${step}</div>`;
-            });
-            
-            stepsHTML += `<div class="step"><strong>Resultado final:</strong> \\( f'(x) = ${derivative.expression} \\)</div>`;
-            
-            stepsDiv.innerHTML = stepsHTML;
             MathJax.typeset();
         }
         
@@ -272,13 +180,23 @@
             
             const start = -5;
             const end = 5;
-            const step = 0.1;
+            const step = 0.2;
             
             for (let x = start; x <= end; x += step) {
                 try {
-                    labels.push(x.toFixed(1));
-                    originalData.push(evaluateFunction(originalFunc, x));
-                    derivativeData.push(evaluateFunction(derivativeExpr, x));
+                    // Evaluar la función original
+                    const scope = {x: x};
+                    const y1 = math.evaluate(originalFunc, scope);
+                    
+                    // Evaluar la derivada
+                    const y2 = math.evaluate(derivativeExpr, scope);
+                    
+                    // Solo agregar puntos si son finitos
+                    if (isFinite(y1) && isFinite(y2)) {
+                        labels.push(x.toFixed(1));
+                        originalData.push(y1);
+                        derivativeData.push(y2);
+                    }
                 } catch (e) {
                     // Ignorar puntos donde la función no está definida
                 }
@@ -294,14 +212,16 @@
                             data: originalData,
                             borderColor: 'rgb(75, 192, 192)',
                             tension: 0.1,
-                            borderWidth: 2
+                            borderWidth: 2,
+                            pointRadius: 0
                         },
                         {
                             label: `f'(x) = ${derivativeExpr}`,
                             data: derivativeData,
                             borderColor: 'rgb(255, 99, 132)',
                             tension: 0.1,
-                            borderWidth: 2
+                            borderWidth: 2,
+                            pointRadius: 0
                         }
                     ]
                 },
@@ -309,35 +229,42 @@
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: false
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Valor de y'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Valor de x'
+                            }
                         }
                     },
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Función y su derivada'
+                            text: 'Comparación de la función y su derivada',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
                         }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
-        }
-        
-        function evaluateFunction(funcStr, x) {
-            // Evaluar la función en un punto x (muy básico, sin seguridad)
-            // En una aplicación real usarías math.js o expr-eval
-            
-            // Reemplazar x con el valor numérico
-            let expr = funcStr.replace(/x/g, `(${x})`);
-            
-            // Reemplazar funciones matemáticas
-            expr = expr.replace(/sin/g, 'Math.sin')
-                      .replace(/cos/g, 'Math.cos')
-                      .replace(/e\^/g, 'Math.exp')
-                      .replace(/ln/g, 'Math.log')
-                      .replace(/\^/g, '**');
-            
-            // Evaluar la expresión (CUIDADO: esto puede ser peligroso sin sanitización adecuada)
-            return eval(expr);
         }
         
         function showError(message) {
