@@ -1,292 +1,185 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Avanzada de Derivadas</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.6.0/lib/browser/math.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-        }
-        h1, h2 {
-            color: #2c3e50;
-        }
-        .container {
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        input, button {
-            padding: 8px 12px;
-            margin: 5px 0;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        input {
-            width: 300px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        #result, #steps {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: white;
-            border-radius: 4px;
-            border-left: 4px solid #3498db;
-        }
-        .step {
-            margin-bottom: 10px;
-            padding: 8px;
-            background-color: #f0f8ff;
-            border-radius: 4px;
-        }
-        .graph-container {
-            margin-top: 30px;
-        }
-        .error {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        .info {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        .math {
-            font-size: 1.1em;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Derivadas por definición</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .contenedor {
+      max-width: 900px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      border: 1px solid #d3e0ea;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2e3a59;
+      margin-bottom: 30px;
+    }
+
+    input, button {
+      font-size: 16px;
+      padding: 12px 16px;
+      margin-top: 10px;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    input {
+      width: 65%;
+      border: 1px solid #a5b8d0;
+      background-color: #f8fbff;
+    }
+
+    button {
+      background-color: #4e91f9;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #2b6eea;
+    }
+
+    .paso {
+      background-color: #f5f9ff;
+      padding: 14px 20px;
+      border-left: 5px solid #4e91f9;
+      margin-top: 12px;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+
+    .error {
+      color: #c62828;
+      font-weight: bold;
+    }
+
+    #grafico {
+      margin-top: 40px;
+      background-color: #fafbfc;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    code {
+      background: #e0f0ff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
 </head>
 <body>
-    <h1>Calculadora Avanzada de Derivadas</h1>
-    
-    <div class="container">
-        <h2>Ingresa tu función</h2>
-        <p>Ejemplos: 2x^2, 3x^3 + 2x - 5, sin(2x), e^(3x), ln(x^2), sqrt(4x)</p>
-        <input type="text" id="functionInput" placeholder="Ejemplo: 2x^2 + 3x - 5" value="2x^2">
-        <button onclick="calculateDerivative()">Calcular Derivada</button>
-        <p class="info">Usa ^ para exponentes, * para multiplicación, y paréntesis para agrupación.</p>
-    </div>
-    
-    <div class="container">
-        <h2>Resultado</h2>
-        <div id="result">La derivada aparecerá aquí...</div>
-        
-        <h3>Pasos detallados de la solución</h3>
-        <div id="steps">Los pasos detallados aparecerán aquí...</div>
-    </div>
-    
-    <div class="container graph-container">
-        <h2>Gráfica de la función y su derivada</h2>
-        <canvas id="functionChart" width="400" height="200"></canvas>
-    </div>
+  <div class="contenedor">
+    <h1>📐 Derivada por definición paso a paso</h1>
+    <p>Ingresa la función <strong>f(x)</strong> (ejemplo: <code>x^2 + 3*x</code>):</p>
+    <input type="text" id="funcion" placeholder="Ejemplo: x^2 + 3*x">
+    <button onclick="calcularDerivada()">Calcular derivada</button>
+    <div id="resultado"></div>
+    <div id="grafico"></div>
+  </div>
 
-    <script>
-        let functionChart = null;
-        
-        // Configurar math.js para usar x como variable
-        math.import({
-            'x': math.complex(0, 0)
-        }, {override: true});
-        
-        function calculateDerivative() {
-            const input = document.getElementById('functionInput').value.trim();
-            if (!input) {
-                showError("Por favor ingresa una función.");
-                return;
-            }
-            
-            try {
-                // Limpiar resultados anteriores
-                document.getElementById('result').innerHTML = "Calculando...";
-                document.getElementById('steps').innerHTML = "";
-                
-                // Parsear la función y calcular la derivada
-                const steps = [];
-                const derivative = computeDerivative(input, steps);
-                
-                // Mostrar resultados
-                displayResult(input, derivative, steps);
-                plotFunctionAndDerivative(input, derivative);
-                
-            } catch (error) {
-                showError("Error al calcular la derivada: " + error.message);
-                console.error(error);
-            }
-        }
-        
-        function computeDerivative(expr, steps) {
-            try {
-                // Simplificar la expresión primero
-                let simplified = math.simplify(expr).toString();
-                if (simplified !== expr) {
-                    steps.push(`<div class="step"><strong>Simplificando la expresión:</strong><br>${expr} → ${simplified}</div>`);
-                }
-                
-                // Calcular la derivada usando math.js
-                let derivative = math.derivative(simplified, 'x').toString();
-                steps.push(`<div class="step"><strong>Aplicando reglas de derivación:</strong><br>d/dx(${simplified}) = ${derivative}</div>`);
-                
-                // Simplificar el resultado de la derivada
-                let simplifiedDerivative = math.simplify(derivative).toString();
-                if (simplifiedDerivative !== derivative) {
-                    steps.push(`<div class="step"><strong>Simplificando el resultado:</strong><br>${derivative} → ${simplifiedDerivative}</div>`);
-                }
-                
-                return simplifiedDerivative;
-            } catch (e) {
-                throw new Error("No se pudo calcular la derivada. Asegúrate de usar sintaxis válida como 2x^2, sin(x), etc.");
-            }
-        }
-        
-        function displayResult(originalFunc, derivative, steps) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <p class="math">Función original: \\( f(x) = ${originalFunc} \\)</p>
-                <p class="math">Derivada: \\( f'(x) = ${derivative} \\)</p>
-            `;
-            
-            const stepsDiv = document.getElementById('steps');
-            stepsDiv.innerHTML = steps.join('');
-            
-            MathJax.typeset();
-        }
-        
-        function plotFunctionAndDerivative(originalFunc, derivativeExpr) {
-            // Limpiar gráfica anterior si existe
-            if (functionChart) {
-                functionChart.destroy();
-            }
-            
-            const ctx = document.getElementById('functionChart').getContext('2d');
-            
-            // Generar datos para la gráfica
-            const labels = [];
-            const originalData = [];
-            const derivativeData = [];
-            
-            const start = -5;
-            const end = 5;
-            const step = 0.2;
-            
-            for (let x = start; x <= end; x += step) {
-                try {
-                    // Evaluar la función original
-                    const scope = {x: x};
-                    const y1 = math.evaluate(originalFunc, scope);
-                    
-                    // Evaluar la derivada
-                    const y2 = math.evaluate(derivativeExpr, scope);
-                    
-                    // Solo agregar puntos si son finitos
-                    if (isFinite(y1) && isFinite(y2)) {
-                        labels.push(x.toFixed(1));
-                        originalData.push(y1);
-                        derivativeData.push(y2);
-                    }
-                } catch (e) {
-                    // Ignorar puntos donde la función no está definida
-                }
-            }
-            
-            functionChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: `f(x) = ${originalFunc}`,
-                            data: originalData,
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1,
-                            borderWidth: 2,
-                            pointRadius: 0
-                        },
-                        {
-                            label: `f'(x) = ${derivativeExpr}`,
-                            data: derivativeData,
-                            borderColor: 'rgb(255, 99, 132)',
-                            tension: 0.1,
-                            borderWidth: 2,
-                            pointRadius: 0
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            title: {
-                                display: true,
-                                text: 'Valor de y'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Valor de x'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Comparación de la función y su derivada',
-                            font: {
-                                size: 16
-                            }
-                        },
-                        legend: {
-                            position: 'top'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
-                }
-            });
-        }
-        
-        function showError(message) {
-            document.getElementById('result').innerHTML = `<span class="error">${message}</span>`;
-            document.getElementById('steps').innerHTML = "";
-            
-            if (functionChart) {
-                functionChart.destroy();
-                functionChart = null;
-            }
-        }
-        
-        // Calcular automáticamente al cargar la página
-        window.onload = function() {
-            calculateDerivative();
+  <script>
+    function calcularDerivada() {
+      const entrada = document.getElementById("funcion").value.trim();
+      const resultado = document.getElementById("resultado");
+      const grafico = document.getElementById("grafico");
+      resultado.innerHTML = "";
+      grafico.innerHTML = "";
+
+      if (!entrada) {
+        resultado.innerHTML = '<div class="paso error">⚠️ Ingresa una función válida.</div>';
+        return;
+      }
+
+      try {
+        const fx = math.parse(entrada);
+        const fx_str = fx.toString();
+
+        const fxh = fx.transform(node =>
+          node.isSymbolNode && node.name === "x"
+            ? math.parse("(x + h)")
+            : node
+        );
+        const fxh_str = fxh.toString();
+        const fxh_exp = math.simplify(fxh_str).toString();
+
+        const diferencia = math.simplify(`(${fxh_str}) - (${fx_str})`).toString();
+        const diferencia_simplificada = math.simplify(diferencia).toString();
+
+        const cociente = math.simplify(`(${diferencia_simplificada}) / h`).toString();
+        const cociente_simplificado = math.simplify(cociente).toString();
+
+        const derivada = math.derivative(entrada, 'x');
+        const derivada_str = derivada.toString();
+
+        resultado.innerHTML += `<div class="paso"><strong>1)</strong> Fórmula de la derivada:<br>f'(x) = lim₍ₕ→0₎ [f(x+h) - f(x)] / h</div>`;
+        resultado.innerHTML += `<div class="paso"><strong>2)</strong> f(x) = <strong>${fx_str}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>3)</strong> Sustituimos x por (x+h):<br>f(x+h) = <strong>${fxh_str}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>4)</strong> Expandimos f(x+h):<br><strong>${fxh_exp}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>5)</strong> Restamos f(x+h) - f(x):<br><strong>${diferencia}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>6)</strong> Simplificamos la resta:<br><strong>${diferencia_simplificada}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>7)</strong> Dividimos entre h:<br><strong>${cociente}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>8)</strong> Simplificamos el cociente:<br><strong>${cociente_simplificado}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>9)</strong> Aplicamos el límite cuando h→0.</div>`;
+        resultado.innerHTML += `<div class="paso"><strong>10)</strong> Resultado final:<br>f'(x) = <strong>${derivada_str}</strong></div>`;
+        resultado.innerHTML += `<div class="paso"><strong>11)</strong> Interpretación: La derivada f'(x) representa la pendiente de la recta tangente a la curva de f(x) en cada punto x. Es decir, indica cómo cambia la función en cada instante.</div>`;
+
+        const expr = math.compile(entrada);
+        const derivExpr = math.compile(derivada_str);
+
+        const xValues = math.range(-10, 10, 0.2).toArray();
+        const yValues = xValues.map(x => expr.evaluate({ x }));
+        const yDerivValues = xValues.map(x => derivExpr.evaluate({ x }));
+
+        const trace1 = {
+          x: xValues,
+          y: yValues,
+          mode: 'lines',
+          name: 'f(x)',
+          line: { width: 3, color: '#00bcd4' }
         };
-    </script>
+
+        const trace2 = {
+          x: xValues,
+          y: yDerivValues,
+          mode: 'lines',
+          name: "f'(x)",
+          line: { width: 3, dash: 'dot', color: '#f44336' }
+        };
+
+        const layout = {
+          title: 'Gráfico de f(x) y f\'(x)',
+          xaxis: { title: 'x' },
+          yaxis: { title: 'y' },
+          plot_bgcolor: '#ffffff',
+          paper_bgcolor: '#ffffff',
+          font: { family: 'Inter', size: 14 }
+        };
+
+        Plotly.newPlot('grafico', [trace1, trace2], layout);
+      } catch (e) {
+        resultado.innerHTML = `<div class="paso error">❌ Error al interpretar la función. Usa solo <strong>x</strong> como variable y asegúrate de que la sintaxis sea válida.</div>`;
+      }
+    }
+  </script>
 </body>
 </html>
